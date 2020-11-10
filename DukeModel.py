@@ -31,13 +31,11 @@ Recovered_o = np.zeros(T_end)
 Deaths_o = np.zeros(T_end)
 
 totSusceptible = np.zeros(T_end)
-totSusceptible[0] = 4990
 totUndetected = np.zeros(T_end)
-totUndetected[0] = 10
 
 # SWEEP VARIABLES
 Beta_stu = .306  # Base Case   Each student to each student
-Beta_c = .204  # Base Case  Between on campus students
+Beta_c = .1  # Base Case  Between on campus students
 screening = 0.2857  # Base Case
 X = 2 / 7  # Base Case
 Y = 4 / 7
@@ -81,13 +79,14 @@ def OnCampus(t):
             totUndetected[t] / (totSusceptible[t] + totUndetected[t]))  # Fraction of non-isolated students infected
 
     infectedFrac_c = Undetected_c[t] / (Susceptible_c[t] + Undetected_c[t])
+
     print(infectedFrac, infectedFrac_c)
 
-    Susceptible_c[t + 1] = Susceptible_c[t] * (1 - Beta_stu * (infectedFrac + infectedFrac_c)) \
+    Susceptible_c[t + 1] = Susceptible_c[t] * (1 - Beta_stu * infectedFrac - Beta_c * infectedFrac_c) \
                            - Susceptible_c[t - 1] * screening * (1 - specificity) + mu * Iso_un_c[t] - X
 
     Undetected_c[t + 1] = Undetected_c[t] * (1 - symptom_onset - recovery_rate) \
-                          + Beta_stu * Susceptible_c[t] * (infectedFrac + infectedFrac_c)\
+                          + Susceptible_c[t] *(Beta_stu * infectedFrac + Beta_c * infectedFrac_c)\
                           - Undetected_c[t - 1] * screening * sensitivity + X
 
     Iso_un_c[t + 1] = Iso_un_c[t] * (1 - mu) + Susceptible_c[t - 1] * screening * (1 - specificity)
@@ -111,9 +110,10 @@ def OffCampus(t):
     Susceptible_o[t + 1] = Susceptible_o[t] * (
             1 - Beta_stu * infectedFrac) - Susceptible_o[t - 1] * screening * (1 - specificity) + \
                            mu * Iso_un_o[t] - X
+
     Undetected_o[t + 1] = Undetected_o[t] * (1 - symptom_onset - recovery_rate) + \
                           Beta_stu * Susceptible_o[t] * infectedFrac \
-                          - Undetected_o[t - 1] * screening * sensitivity + X
+                          - Undetected_o[t - 1] * screening * sensitivity + Y
 
     Iso_un_o[t + 1] = Iso_un_o[t] * (1 - mu) + Susceptible_o[t - 1] * screening * (1 - specificity)
 
